@@ -15,15 +15,6 @@
  */
 package org.activiti.bpmn.converter;
 
-import static java.util.Arrays.asList;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.activiti.bpmn.constants.BpmnXMLConstants;
 import org.activiti.bpmn.converter.child.BaseChildElementParser;
 import org.activiti.bpmn.converter.export.ActivitiListenerExport;
@@ -47,6 +38,7 @@ import org.activiti.bpmn.model.FlowNode;
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.bpmn.model.FormValue;
 import org.activiti.bpmn.model.Gateway;
+import org.activiti.bpmn.model.LinkEventDefinition;
 import org.activiti.bpmn.model.MessageEventDefinition;
 import org.activiti.bpmn.model.Process;
 import org.activiti.bpmn.model.SequenceFlow;
@@ -61,6 +53,14 @@ import org.activiti.bpmn.model.ValuedDataObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Arrays.asList;
 
 public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
 
@@ -387,7 +387,9 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
       } else if (eventDefinition instanceof SignalEventDefinition) {
         writeSignalDefinition(parentEvent, (SignalEventDefinition) eventDefinition, xtw);
       } else if (eventDefinition instanceof MessageEventDefinition) {
-        writeMessageDefinition(parentEvent, (MessageEventDefinition) eventDefinition, model, xtw);
+          writeMessageDefinition(parentEvent, (MessageEventDefinition) eventDefinition, model, xtw);
+      } else if(eventDefinition instanceof LinkEventDefinition){
+          writeLinkDefinition(parentEvent, (LinkEventDefinition) eventDefinition, xtw);
       } else if (eventDefinition instanceof ErrorEventDefinition) {
         writeErrorDefinition(parentEvent, (ErrorEventDefinition) eventDefinition, xtw);
       } else if (eventDefinition instanceof TerminateEventDefinition) {
@@ -400,7 +402,12 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
     }
   }
 
-  protected void writeTimerDefinition(Event parentEvent, TimerEventDefinition timerDefinition, XMLStreamWriter xtw) throws Exception {
+    protected void writeLinkDefinition(Event parentEvent, LinkEventDefinition eventDefinition, XMLStreamWriter xtw) throws Exception {
+    xtw.writeStartElement(ELEMENT_EVENT_LINKDEFINITION);
+    writeDefaultAttribute(ATTRIBUTE_ID, eventDefinition.getId(), xtw);
+  }
+
+    protected void writeTimerDefinition(Event parentEvent, TimerEventDefinition timerDefinition, XMLStreamWriter xtw) throws Exception {
     xtw.writeStartElement(ELEMENT_EVENT_TIMERDEFINITION);
     if (StringUtils.isNotEmpty(timerDefinition.getCalendarName())) {
       writeQualifiedAttribute(ATTRIBUTE_CALENDAR_NAME, timerDefinition.getCalendarName(), xtw);

@@ -16,12 +16,6 @@
 
 package org.activiti.engine.impl.bpmn.parser.factory;
 
-import static java.util.Collections.emptyList;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.activiti.bpmn.model.Activity;
 import org.activiti.bpmn.model.BoundaryEvent;
 import org.activiti.bpmn.model.BusinessRuleTask;
@@ -37,6 +31,7 @@ import org.activiti.bpmn.model.ExtensionAttribute;
 import org.activiti.bpmn.model.FieldExtension;
 import org.activiti.bpmn.model.InclusiveGateway;
 import org.activiti.bpmn.model.IntermediateCatchEvent;
+import org.activiti.bpmn.model.LinkEventDefinition;
 import org.activiti.bpmn.model.ManualTask;
 import org.activiti.bpmn.model.MapExceptionEntry;
 import org.activiti.bpmn.model.Message;
@@ -77,10 +72,12 @@ import org.activiti.engine.impl.bpmn.behavior.EventSubProcessMessageStartEventAc
 import org.activiti.engine.impl.bpmn.behavior.ExclusiveGatewayActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.InclusiveGatewayActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateCatchEventActivityBehavior;
+import org.activiti.engine.impl.bpmn.behavior.IntermediateCatchLinkEventActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateCatchMessageEventActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateCatchSignalEventActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateCatchTimerEventActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateThrowCompensationEventActivityBehavior;
+import org.activiti.engine.impl.bpmn.behavior.IntermediateThrowLinkEventActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateThrowMessageEventActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateThrowNoneEventActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.IntermediateThrowSignalEventActivityBehavior;
@@ -116,6 +113,12 @@ import org.activiti.engine.impl.delegate.ThrowMessageJavaDelegate;
 import org.activiti.engine.impl.scripting.ScriptingEngines;
 import org.activiti.engine.impl.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Collections.emptyList;
 
 /**
  * Default implementation of the {@link ActivityBehaviorFactory}. Used when no custom {@link ActivityBehaviorFactory} is injected on the {@link ProcessEngineConfigurationImpl}.
@@ -472,6 +475,10 @@ public class DefaultActivityBehaviorFactory extends AbstractBehaviorFactory impl
                                                                  messageExecutionContext);
     }
 
+    public IntermediateCatchLinkEventActivityBehavior createIntermediateCatchLinkEventActivityBehavior(IntermediateCatchEvent intermediateCatchEvent, LinkEventDefinition linkEventDefinition) {
+        return new IntermediateCatchLinkEventActivityBehavior(linkEventDefinition);
+    }
+
     public IntermediateCatchTimerEventActivityBehavior createIntermediateCatchTimerEventActivityBehavior(IntermediateCatchEvent intermediateCatchEvent,
                                                                                                          TimerEventDefinition timerEventDefinition) {
         return new IntermediateCatchTimerEventActivityBehavior(timerEventDefinition);
@@ -590,6 +597,10 @@ public class DefaultActivityBehaviorFactory extends AbstractBehaviorFactory impl
                                                                  messageEventDefinition,
                                                                  throwMessageDelegate,
                                                                  messageExecutionContext);
+    }
+
+    public IntermediateThrowLinkEventActivityBehavior createThrowLinkEventActivityBehavior(ThrowEvent throwEvent, LinkEventDefinition linkEventDefinition) {
+        return new IntermediateThrowLinkEventActivityBehavior(throwEvent, linkEventDefinition);
     }
 
     @Override

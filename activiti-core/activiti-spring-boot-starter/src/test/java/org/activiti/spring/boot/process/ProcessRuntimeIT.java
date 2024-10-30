@@ -15,20 +15,7 @@
  */
 package org.activiti.spring.boot.process;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.assertj.core.groups.Tuple.tuple;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.activiti.api.model.shared.model.VariableInstance;
-import org.activiti.api.runtime.shared.security.SecurityManager;
 import org.activiti.api.process.model.Deployment;
 import org.activiti.api.process.model.ProcessDefinition;
 import org.activiti.api.process.model.ProcessInstance;
@@ -41,6 +28,7 @@ import org.activiti.api.process.runtime.ProcessRuntime;
 import org.activiti.api.process.runtime.conf.ProcessRuntimeConfiguration;
 import org.activiti.api.runtime.shared.query.Page;
 import org.activiti.api.runtime.shared.query.Pageable;
+import org.activiti.api.runtime.shared.security.SecurityManager;
 import org.activiti.api.task.model.Task;
 import org.activiti.api.task.model.builders.TaskPayloadBuilder;
 import org.activiti.api.task.runtime.TaskRuntime;
@@ -68,6 +56,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.groups.Tuple.tuple;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class ProcessRuntimeIT {
 
@@ -82,7 +84,7 @@ public class ProcessRuntimeIT {
     private static final Pageable PAGEABLE = Pageable.of(0,
         50);
     public static final String CATEGORIZE_HUMAN_PROCESS_CATEGORY = "test-category";
-
+    private static final String LINK_PROCESS = "Process_RN9eecZN";
     @Autowired
     private ProcessRuntime processRuntime;
 
@@ -176,6 +178,20 @@ public class ProcessRuntimeIT {
         RuntimeTestConfiguration.tagImageConnectorExecuted = false;
         RuntimeTestConfiguration.discardImageConnectorExecuted = false;
     }
+    @Test
+    public void createProcessInstanceWithLinkEventsAndValidateHappyPath() {
+        //when
+        ProcessInstance linkProcess = processRuntime.start(ProcessPayloadBuilder.start()
+            .withProcessDefinitionKey(LINK_PROCESS)
+            .withVariable("expectedKey",
+                true)
+            .build());
+        assertThat(RuntimeTestConfiguration.completedProcesses).contains(linkProcess.getId());
+        //then
+        assertThat(linkProcess).isNotNull();
+
+        assertThat(linkProcess.getStatus()).isEqualTo(ProcessInstance.ProcessInstanceStatus.COMPLETED);
+    }
 
     @Test
     public void shouldGetConfiguration() {
@@ -267,6 +283,8 @@ public class ProcessRuntimeIT {
         assertThat(RuntimeTestConfiguration.tagImageConnectorExecuted).isEqualTo(true);
         assertThat(RuntimeTestConfiguration.discardImageConnectorExecuted).isEqualTo(false);
     }
+
+
 
     @Test
     public void should_createNewProcessInstanceWithoutRunningIt_whenCreateIsCalled() {
