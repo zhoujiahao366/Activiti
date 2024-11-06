@@ -260,11 +260,6 @@ public interface BpmnXMLConstants {
   public static final String ELEMENT_EVENT_COMPENSATEDEFINITION = "compensateEventDefinition";
   public static final String ATTRIBUTE_COMPENSATE_ACTIVITYREF = "activityRef";
   public static final String ATTRIBUTE_COMPENSATE_WAITFORCOMPLETION = "waitForCompletion";
-  public static final String ELEMENT_EVENT_LINKDEFINITION = "linkEventDefinition";
-  public static final String ATTRIBUTE_LINK_ID = "id";
-  public static final String ATTRIBUTE_LINK_NAME = "name";
-  public static final String ATTRIBUTE_LINK_SOURCE = "source";
-  public static final String ATTRIBUTE_LINK_TARGET = "target";
 
   public static final String ELEMENT_FORMPROPERTY = "formProperty";
   public static final String ATTRIBUTE_FORM_ID = "id";

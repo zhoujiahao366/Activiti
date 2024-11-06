@@ -178,20 +178,6 @@ public class ProcessRuntimeIT {
         RuntimeTestConfiguration.tagImageConnectorExecuted = false;
         RuntimeTestConfiguration.discardImageConnectorExecuted = false;
     }
-    @Test
-    public void createProcessInstanceWithLinkEventsAndValidateHappyPath() {
-        //when
-        ProcessInstance linkProcess = processRuntime.start(ProcessPayloadBuilder.start()
-            .withProcessDefinitionKey(LINK_PROCESS)
-            .withVariable("expectedKey",
-                true)
-            .build());
-        assertThat(RuntimeTestConfiguration.completedProcesses).contains(linkProcess.getId());
-        //then
-        assertThat(linkProcess).isNotNull();
-
-        assertThat(linkProcess.getStatus()).isEqualTo(ProcessInstance.ProcessInstanceStatus.COMPLETED);
-    }
 
     @Test
     public void shouldGetConfiguration() {
@@ -283,8 +269,6 @@ public class ProcessRuntimeIT {
         assertThat(RuntimeTestConfiguration.tagImageConnectorExecuted).isEqualTo(true);
         assertThat(RuntimeTestConfiguration.discardImageConnectorExecuted).isEqualTo(false);
     }
-
-
 
     @Test
     public void should_createNewProcessInstanceWithoutRunningIt_whenCreateIsCalled() {

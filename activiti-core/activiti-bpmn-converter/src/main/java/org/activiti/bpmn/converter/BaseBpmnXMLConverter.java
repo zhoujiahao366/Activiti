@@ -71,6 +71,7 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
   protected static final List<ExtensionAttribute> defaultActivityAttributes = asList(new ExtensionAttribute(ACTIVITI_EXTENSIONS_NAMESPACE, ATTRIBUTE_ACTIVITY_ASYNCHRONOUS),
       new ExtensionAttribute(ACTIVITI_EXTENSIONS_NAMESPACE, ATTRIBUTE_ACTIVITY_EXCLUSIVE), new ExtensionAttribute(ATTRIBUTE_DEFAULT), new ExtensionAttribute(ACTIVITI_EXTENSIONS_NAMESPACE,
           ATTRIBUTE_ACTIVITY_ISFORCOMPENSATION));
+  protected LinkEventDefinitionXMLConverter linkEventDefinitionXMLConverter = new LinkEventDefinitionXMLConverter();
 
   public void convertToBpmnModel(XMLStreamReader xtr, BpmnModel model, Process activeProcess, List<SubProcess> activeSubProcessList) throws Exception {
 
@@ -389,7 +390,7 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
       } else if (eventDefinition instanceof MessageEventDefinition) {
           writeMessageDefinition(parentEvent, (MessageEventDefinition) eventDefinition, model, xtw);
       } else if(eventDefinition instanceof LinkEventDefinition){
-          writeLinkDefinition(parentEvent, (LinkEventDefinition) eventDefinition, xtw);
+         linkEventDefinitionXMLConverter.writeLinkDefinition(parentEvent, (LinkEventDefinition) eventDefinition, xtw);
       } else if (eventDefinition instanceof ErrorEventDefinition) {
         writeErrorDefinition(parentEvent, (ErrorEventDefinition) eventDefinition, xtw);
       } else if (eventDefinition instanceof TerminateEventDefinition) {
@@ -402,10 +403,7 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
     }
   }
 
-    protected void writeLinkDefinition(Event parentEvent, LinkEventDefinition eventDefinition, XMLStreamWriter xtw) throws Exception {
-    xtw.writeStartElement(ELEMENT_EVENT_LINKDEFINITION);
-    writeDefaultAttribute(ATTRIBUTE_ID, eventDefinition.getId(), xtw);
-  }
+
 
     protected void writeTimerDefinition(Event parentEvent, TimerEventDefinition timerDefinition, XMLStreamWriter xtw) throws Exception {
     xtw.writeStartElement(ELEMENT_EVENT_TIMERDEFINITION);

@@ -23,20 +23,22 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.activiti.bpmn.converter.LinkEventDefinitionXMLConverter.ATTRIBUTE_LINK_SOURCE;
+
 public class LinkEventSourceParser extends BaseChildElementParser{
+
+    private List<String> sources = new ArrayList<>();
 
     public String getElementName() {
         return ATTRIBUTE_LINK_SOURCE;
     }
 
     public void parseChildElement(XMLStreamReader xtr, BaseElement parentElement, BpmnModel model) throws Exception {
-        if (!(parentElement instanceof LinkEventDefinition)) {
-            return;
-        }
 
-        LinkEventDefinition eventDefinition = (LinkEventDefinition) parentElement;
-        List<String> sources=new ArrayList<>();
-        sources.add(xtr.getElementText());
-        eventDefinition.setSource(sources);
+        if(parentElement instanceof LinkEventDefinition) {
+            LinkEventDefinition eventDefinition = (LinkEventDefinition) parentElement;
+            sources.add(xtr.getElementText());
+            eventDefinition.setSources(sources);
+        }
     }
 }

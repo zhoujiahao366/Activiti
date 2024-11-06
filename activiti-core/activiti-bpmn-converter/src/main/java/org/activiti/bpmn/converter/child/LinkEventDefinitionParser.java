@@ -23,28 +23,29 @@ import org.activiti.bpmn.model.LinkEventDefinition;
 
 import javax.xml.stream.XMLStreamReader;
 
-public class LinkEventDefinitionParser extends BaseChildElementParser{
+import static org.activiti.bpmn.converter.LinkEventDefinitionXMLConverter.ELEMENT_EVENT_LINK_DEFINITION;
+
+public class LinkEventDefinitionParser extends BaseChildElementParser {
 
     public String getElementName() {
-        return ELEMENT_EVENT_LINKDEFINITION;
+        return ELEMENT_EVENT_LINK_DEFINITION;
     }
 
     public void parseChildElement(XMLStreamReader xtr, BaseElement parentElement, BpmnModel model) throws Exception {
-        if (!(parentElement instanceof Event))
-            return;
-        LinkEventDefinition eventDefinition = new LinkEventDefinition();
-        BpmnXMLUtil.addXMLLocation(eventDefinition,
-            xtr);
+        if (parentElement instanceof Event) {
+            LinkEventDefinition eventDefinition = new LinkEventDefinition();
+            BpmnXMLUtil.addXMLLocation(eventDefinition,
+                xtr);
 
-      eventDefinition.setName(xtr.getAttributeValue(null, ATTRIBUTE_LINK_ID));
-      eventDefinition.setId(xtr.getAttributeValue(null, ATTRIBUTE_NAME));
+            eventDefinition.setName(xtr.getAttributeValue(null, ATTRIBUTE_NAME));
+            eventDefinition.setId(xtr.getAttributeValue(null, ATTRIBUTE_ID));
 
+            BpmnXMLUtil.parseChildElements(ELEMENT_EVENT_LINK_DEFINITION,
+                eventDefinition,
+                xtr,
+                model);
 
-        BpmnXMLUtil.parseChildElements(ELEMENT_EVENT_LINKDEFINITION,
-            eventDefinition,
-            xtr,
-            model);
-
-        ((Event) parentElement).getEventDefinitions().add(eventDefinition);
+            ((Event) parentElement).getEventDefinitions().add(eventDefinition);
+        }
     }
-}
+    }

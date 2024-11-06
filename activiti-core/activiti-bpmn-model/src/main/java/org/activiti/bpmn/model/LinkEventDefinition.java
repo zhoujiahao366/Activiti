@@ -28,7 +28,7 @@ public class LinkEventDefinition extends EventDefinition{
     protected List<String> sources;
 
     public LinkEventDefinition clone() {
-        LinkEventDefinition clone=new LinkEventDefinition();
+        LinkEventDefinition clone = new LinkEventDefinition();
         clone.setValues(this);
         return clone;
     }
@@ -58,10 +58,10 @@ public class LinkEventDefinition extends EventDefinition{
     }
 
     public List<String> getSources() {
-        return this.sources;
+        return sources;
     }
 
-    public void setSource(List<String> sources) {
+    public void setSources(List<String> sources) {
         this.sources = sources;
     }
 
@@ -70,6 +70,6 @@ public class LinkEventDefinition extends EventDefinition{
         setId(otherDefinition.getId());
         setName(otherDefinition.getName());
         setTarget(otherDefinition.getTarget());
-        setSource(otherDefinition.getSources());
+        setSources(otherDefinition.getSources());
     }
 }
