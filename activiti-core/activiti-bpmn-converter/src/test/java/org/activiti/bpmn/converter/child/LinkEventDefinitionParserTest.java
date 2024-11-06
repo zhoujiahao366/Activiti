@@ -18,7 +18,7 @@ package org.activiti.bpmn.converter.child;
 import org.activiti.bpmn.model.IntermediateCatchEvent;
 import org.activiti.bpmn.model.LinkEventDefinition;
 import org.activiti.bpmn.model.ThrowEvent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -46,8 +46,6 @@ public class LinkEventDefinitionParserTest {
             assertThat(linkEventDefinition.getId()).isEqualTo("LinkEventDefinition_03bs3ae");
             assertThat(linkEventDefinition.getName()).isEqualTo("a");
             assertThat(linkEventDefinition.getTarget()).isEqualTo("LinkEventDefinition_1smqlx0");
-
-
         }
     }
 
@@ -69,6 +67,6 @@ public class LinkEventDefinitionParserTest {
             assertThat(linkEventDefinition.getName()).isEqualTo("a");
             assertThat(linkEventDefinition.getSources().get(0)).isEqualTo("LinkEventDefinition_03bs3ae");
             assertThat(linkEventDefinition.getSources().get(1)).isEqualTo("test");
-}
+        }
         }
     }

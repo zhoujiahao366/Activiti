@@ -17,8 +17,8 @@ package org.activiti.bpmn.converter;
 
 import org.activiti.bpmn.model.Event;
 import org.activiti.bpmn.model.LinkEventDefinition;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -28,7 +28,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class LinkEventDefinitionXMLConverterTest {
