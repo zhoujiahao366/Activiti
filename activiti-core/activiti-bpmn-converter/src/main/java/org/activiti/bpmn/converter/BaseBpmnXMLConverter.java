@@ -403,8 +403,6 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
     }
   }
 
-
-
     protected void writeTimerDefinition(Event parentEvent, TimerEventDefinition timerDefinition, XMLStreamWriter xtw) throws Exception {
     xtw.writeStartElement(ELEMENT_EVENT_TIMERDEFINITION);
     if (StringUtils.isNotEmpty(timerDefinition.getCalendarName())) {

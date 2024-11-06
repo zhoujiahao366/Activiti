@@ -84,7 +84,7 @@ public class ProcessRuntimeIT {
     private static final Pageable PAGEABLE = Pageable.of(0,
         50);
     public static final String CATEGORIZE_HUMAN_PROCESS_CATEGORY = "test-category";
-    private static final String LINK_PROCESS = "Process_RN9eecZN";
+
     @Autowired
     private ProcessRuntime processRuntime;
 
