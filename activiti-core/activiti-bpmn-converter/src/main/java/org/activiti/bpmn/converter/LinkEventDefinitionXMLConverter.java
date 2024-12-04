@@ -15,7 +15,6 @@
  */
 package org.activiti.bpmn.converter;
 
-import org.activiti.bpmn.model.Event;
 import org.activiti.bpmn.model.LinkEventDefinition;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,6 +23,8 @@ import javax.xml.stream.XMLStreamWriter;
 
 import static org.activiti.bpmn.constants.BpmnXMLConstants.ATTRIBUTE_ID;
 import static org.activiti.bpmn.constants.BpmnXMLConstants.ATTRIBUTE_NAME;
+import static org.activiti.bpmn.constants.BpmnXMLConstants.BPMN2_NAMESPACE;
+import static org.activiti.bpmn.constants.BpmnXMLConstants.BPMN2_PREFIX;
 
 
 public class LinkEventDefinitionXMLConverter {
@@ -32,7 +33,7 @@ public class LinkEventDefinitionXMLConverter {
     public static final String ATTRIBUTE_LINK_TARGET = "target";
 
     public void writeLinkDefinition(LinkEventDefinition eventDefinition, XMLStreamWriter xtw) throws Exception {
-        xtw.writeStartElement(ELEMENT_EVENT_LINK_DEFINITION);
+        xtw.writeStartElement(BPMN2_PREFIX, ELEMENT_EVENT_LINK_DEFINITION, BPMN2_NAMESPACE);
         writeAttribute(xtw, ATTRIBUTE_ID, eventDefinition.getId());
         writeAttribute(xtw, ATTRIBUTE_NAME, eventDefinition.getName());
         writeElement(xtw, ATTRIBUTE_LINK_TARGET, eventDefinition.getTarget());
@@ -45,14 +46,14 @@ public class LinkEventDefinitionXMLConverter {
     }
 
     private void writeAttribute(XMLStreamWriter xtw, String attributeName, String attributeValue) throws XMLStreamException {
-        if (StringUtils.isNotEmpty(attributeValue)) {
+        if (attributeValue != null) {
             xtw.writeAttribute(attributeName, attributeValue);
         }
     }
 
     private void writeElement(XMLStreamWriter xtw, String elementName, String elementValue) throws XMLStreamException {
         if (StringUtils.isNotEmpty(elementValue)) {
-            xtw.writeStartElement(elementName);
+            xtw.writeStartElement(BPMN2_PREFIX, elementName, BPMN2_NAMESPACE);
             xtw.writeCharacters(elementValue);
             xtw.writeEndElement();
         }
