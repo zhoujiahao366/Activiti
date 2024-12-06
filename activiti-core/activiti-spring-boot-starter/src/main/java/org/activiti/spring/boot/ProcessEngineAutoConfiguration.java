@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-
 import javax.sql.DataSource;
-
 import org.activiti.api.process.model.events.ApplicationDeployedEvent;
 import org.activiti.api.process.model.events.ProcessDeployedEvent;
 import org.activiti.api.process.model.events.StartMessageDeployedEvent;
@@ -163,6 +161,11 @@ public class ProcessEngineAutoConfiguration extends AbstractProcessEngineAutoCon
                 processEngineConfigurationConfigurer.configure(conf);
             }
         }
+
+        if (activitiProperties.getProcessDefinitionCacheLimit() != null) {
+            conf.setProcessDefinitionCacheLimit(activitiProperties.getProcessDefinitionCacheLimit());
+        }
+
         springAsyncExecutor.applyConfig(conf);
         return conf;
     }
