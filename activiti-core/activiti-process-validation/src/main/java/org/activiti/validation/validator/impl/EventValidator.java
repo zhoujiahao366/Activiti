@@ -16,12 +16,11 @@
 
 package org.activiti.validation.validator.impl;
 
-import java.util.List;
-
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.CompensateEventDefinition;
 import org.activiti.bpmn.model.Event;
 import org.activiti.bpmn.model.EventDefinition;
+import org.activiti.bpmn.model.LinkEventDefinition;
 import org.activiti.bpmn.model.MessageEventDefinition;
 import org.activiti.bpmn.model.Process;
 import org.activiti.bpmn.model.SignalEventDefinition;
@@ -29,7 +28,10 @@ import org.activiti.bpmn.model.TimerEventDefinition;
 import org.activiti.validation.ValidationError;
 import org.activiti.validation.validator.Problems;
 import org.activiti.validation.validator.ProcessLevelValidator;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 /**
  * Validates rules that apply to all events (start event, boundary event, etc.)
@@ -53,8 +55,9 @@ public class EventValidator extends ProcessLevelValidator {
             handleTimerEventDefinition(process, event, eventDefinition, errors);
           } else if (eventDefinition instanceof CompensateEventDefinition) {
             handleCompensationEventDefinition(bpmnModel, process, event, eventDefinition, errors);
+          } else if (eventDefinition instanceof LinkEventDefinition linkEventDefinition) {
+              handleLinkEventDefinition(process, event, linkEventDefinition, errors);
           }
-
         }
       }
     }
@@ -105,6 +108,15 @@ public class EventValidator extends ProcessLevelValidator {
     if ((StringUtils.isNotEmpty(compensateEventDefinition.getActivityRef()) && process.getFlowElement(compensateEventDefinition.getActivityRef(), true) == null)) {
       addError(errors, Problems.COMPENSATE_EVENT_INVALID_ACTIVITY_REF, process, event);
     }
+  }
+
+  private void handleLinkEventDefinition(Process process, Event event, LinkEventDefinition linkEventDefinition, List<ValidationError> errors) {
+      if (event.isLinkThrowEvent() && StringUtils.isEmpty(linkEventDefinition.getTarget())) {
+          addError(errors, Problems.LINK_EVENT_DEFINITION_MISSING_TARGET, process, event);
+      }
+      if (event.isLinkCatchEvent() && CollectionUtils.isEmpty(linkEventDefinition.getSources())) {
+          addError(errors, Problems.LINK_EVENT_DEFINITION_MISSING_SOURCE, process, event);
+      }
   }
 
 }
