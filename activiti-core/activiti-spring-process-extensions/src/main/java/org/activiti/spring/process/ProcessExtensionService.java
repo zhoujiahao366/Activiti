@@ -17,7 +17,10 @@
 
 package org.activiti.spring.process;
 
+import static java.util.Collections.synchronizedMap;
+
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.activiti.engine.RepositoryService;
@@ -25,21 +28,51 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.spring.process.model.Extension;
 import org.activiti.spring.process.model.ProcessExtensionModel;
 import org.activiti.spring.resources.DeploymentResourceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProcessExtensionService {
 
-    private DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader;
-    private ProcessExtensionResourceReader processExtensionReader;
+    private static final Logger logger = LoggerFactory.getLogger(ProcessExtensionService.class);
+
+    private final DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader;
+    private final ProcessExtensionResourceReader processExtensionReader;
     private RepositoryService repositoryService;
 
     private static final Extension EMPTY_EXTENSIONS = new Extension();
-    private Map<String, Map<String, Extension>> processExtensionModelDeploymentMap = new HashMap<>();
+    private final Map<String, Map<String, Extension>> processExtensionModelDeploymentMap;
 
     public ProcessExtensionService(DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader,
-                                   ProcessExtensionResourceReader processExtensionReader) {
+        ProcessExtensionResourceReader processExtensionReader) {
 
         this.processExtensionLoader = processExtensionLoader;
         this.processExtensionReader = processExtensionReader;
+
+        processExtensionModelDeploymentMap = synchronizedMap(new HashMap<>());
+    }
+
+    public ProcessExtensionService(
+        DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader,
+        ProcessExtensionResourceReader processExtensionReader,
+        int cacheLimit
+    ) {
+        this.processExtensionLoader = processExtensionLoader;
+        this.processExtensionReader = processExtensionReader;
+
+        processExtensionModelDeploymentMap = synchronizedMap(new LinkedHashMap<>(cacheLimit + 1, 0.75f, true) {
+            // +1 is needed, because the entry is inserted first, before it is removed
+            // 0.75 is the default (see javadocs)
+            // true will keep the 'access-order', which is needed to have a real LRU cache
+            private static final long serialVersionUID = 1L;
+
+            protected boolean removeEldestEntry(Map.Entry<String, Map<String, Extension>> eldest) {
+                boolean removeEldest = size() > cacheLimit;
+                if (removeEldest) {
+                    logger.warn("Cache limit of {} entries has been reached, eldest key {} will be evicted", cacheLimit, eldest.getKey());
+                }
+                return removeEldest;
+            }
+        });
     }
 
     private Map<String, Extension> getProcessExtensionsForDeploymentId(String deploymentId) {
