@@ -24,7 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {"spring.activiti.process-definition-cache-limit=200"})
+@TestPropertySource(properties = {"spring.activiti.process-definition-cache-limit=100"})
 public class ProcessDefinitionCacheConfigurationTest {
 
     @Autowired
@@ -35,7 +35,7 @@ public class ProcessDefinitionCacheConfigurationTest {
 
     @Test
     public void shouldConfigureProcessDefinitionCacheLimit() {
-        assertThat(activitiProperties.getProcessDefinitionCacheLimit()).isEqualTo(200);
+        assertThat(activitiProperties.getProcessDefinitionCacheLimit()).isEqualTo(100);
 
         assertThat(processEngineConfiguration.getProcessDefinitionCacheLimit()).isEqualTo(activitiProperties.getProcessDefinitionCacheLimit());
     }

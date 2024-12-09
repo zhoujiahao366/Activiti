@@ -19,7 +19,6 @@ package org.activiti.engine.impl.persistence.deploy;
 
 import java.util.List;
 import java.util.Map;
-
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ActivitiIllegalArgumentException;
@@ -130,7 +129,7 @@ public class DeploymentManager {
   protected ProcessDefinitionCacheEntry resolveProcessDefinitionInternal(CommandContext commandContext,ProcessDefinition processDefinition,String deploymentId, String processDefinitionId){
         DeploymentEntity deployment = deploymentEntityManager.findById(deploymentId);
         deployment.setNew(false);
-        deploy(deployment, null);
+        deploy(deployment, Map.of("processDefinitionsIds", List.of(processDefinitionId)));
         ProcessDefinitionCacheEntry cachedProcessDefinition = processDefinitionCache.get(processDefinitionId);
 
         if (cachedProcessDefinition == null) {
