@@ -17,6 +17,8 @@
 
 package org.activiti.engine.impl.persistence.deploy;
 
+import static org.activiti.engine.impl.cmd.DeploymentSettings.RESOURCE_NAMES;
+
 import java.util.List;
 import java.util.Map;
 import org.activiti.bpmn.model.BpmnModel;
@@ -129,7 +131,7 @@ public class DeploymentManager {
   protected ProcessDefinitionCacheEntry resolveProcessDefinitionInternal(CommandContext commandContext,ProcessDefinition processDefinition,String deploymentId, String processDefinitionId){
         DeploymentEntity deployment = deploymentEntityManager.findById(deploymentId);
         deployment.setNew(false);
-        deploy(deployment, Map.of("processDefinitionsIds", List.of(processDefinitionId)));
+        deploy(deployment, Map.of(RESOURCE_NAMES, List.of(processDefinition.getResourceName())));
         ProcessDefinitionCacheEntry cachedProcessDefinition = processDefinitionCache.get(processDefinitionId);
 
         if (cachedProcessDefinition == null) {

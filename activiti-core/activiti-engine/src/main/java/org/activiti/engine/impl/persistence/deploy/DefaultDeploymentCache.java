@@ -51,8 +51,8 @@ public class DefaultDeploymentCache<T> implements DeploymentCache<T> {
 
           protected boolean removeEldestEntry(Map.Entry<String, T> eldest) {
             boolean removeEldest = size() > limit;
-            if (removeEldest && logger.isWarnEnabled()) {
-              logger.warn("Cache limit {} is reached, {} will be evicted", limit, eldest.getKey());
+            if (removeEldest && logger.isTraceEnabled()) {
+              logger.trace("Cache limit {} is reached, {} will be evicted", limit, eldest.getKey());
             }
             return removeEldest;
           }

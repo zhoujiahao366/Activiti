@@ -16,12 +16,13 @@
 
 package org.activiti.engine.impl.bpmn.deployer;
 
+import static org.activiti.engine.impl.cmd.DeploymentSettings.RESOURCE_NAMES;
+
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import org.activiti.engine.impl.bpmn.parser.BpmnParse;
 import org.activiti.engine.impl.bpmn.parser.BpmnParser;
@@ -56,14 +57,14 @@ public class ParsedDeploymentBuilder {
 
     for (ResourceEntity resource : deployment.getResources().values()) {
       if (isBpmnResource(resource.getName())) {
-        log.debug("Processing BPMN resource {}", resource.getName());
-        BpmnParse parse = createBpmnParseFromResource(resource);
-        for (ProcessDefinitionEntity processDefinition : parse.getProcessDefinitions()) {
-          if (Objects.isNull(deploymentSettings) || containsProcessDefinitionId(processDefinition.getId())) {
-            processDefinitions.add(processDefinition);
-            processDefinitionsToBpmnParseMap.put(processDefinition, parse);
-            processDefinitionsToResourceMap.put(processDefinition, resource);
-          }
+        if (mayBeContainsProcessDefinitionResourceName(resource.getName())) {
+          log.debug("Processing BPMN resource {}", resource.getName());
+          BpmnParse parse = createBpmnParseFromResource(resource);
+          for (ProcessDefinitionEntity processDefinition : parse.getProcessDefinitions()) {
+              processDefinitions.add(processDefinition);
+              processDefinitionsToBpmnParseMap.put(processDefinition, parse);
+              processDefinitionsToResourceMap.put(processDefinition, resource);
+            }
         }
       }
     }
@@ -72,13 +73,13 @@ public class ParsedDeploymentBuilder {
         processDefinitionsToBpmnParseMap, processDefinitionsToResourceMap);
   }
 
-  private boolean containsProcessDefinitionId(String processDefinitionId) {
-      return Optional.ofNullable(deploymentSettings)
-          .filter(it -> it.containsKey("processDefinitionsIds"))
-          .filter(List.class::isInstance)
-          .map(List.class::cast)
-          .filter(it -> it.contains(processDefinitionId))
-          .isPresent();
+  private boolean mayBeContainsProcessDefinitionResourceName(String resourceName) {
+      return !deploymentSettings.containsKey(RESOURCE_NAMES) ||
+          Optional.of(deploymentSettings.get(RESOURCE_NAMES))
+            .filter(List.class::isInstance)
+            .map(List.class::cast)
+            .filter(it -> it.contains(resourceName))
+            .isPresent();
   }
 
   protected BpmnParse createBpmnParseFromResource(ResourceEntity resource) {

@@ -17,6 +17,9 @@ package org.activiti.spring.boot;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.impl.persistence.deploy.ProcessDefinitionCacheEntry;
 import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +36,29 @@ public class ProcessDefinitionCacheConfigurationTest {
     @Autowired
     private ActivitiProperties activitiProperties;
 
+    @Autowired
+    RepositoryService repositoryService;
+
+    @Autowired
+    ProcessEngine processEngine;
+
     @Test
     public void shouldConfigureProcessDefinitionCacheLimit() {
         assertThat(activitiProperties.getProcessDefinitionCacheLimit()).isEqualTo(100);
 
         assertThat(processEngineConfiguration.getProcessDefinitionCacheLimit()).isEqualTo(activitiProperties.getProcessDefinitionCacheLimit());
     }
+
+    @Test
+    public void shouldDeployAllProcessDefinitions() {
+        assertThat(repositoryService.createProcessDefinitionQuery().list()).hasSize(103);
+    }
+
+    @Test
+    public void shouldApplyProcessDefinitionCacheLimit() {
+        var processDefinitionCache = (org.activiti.engine.impl.persistence.deploy.DefaultDeploymentCache<ProcessDefinitionCacheEntry>) processEngineConfiguration.getProcessDefinitionCache();
+
+        assertThat(processDefinitionCache.size()).isEqualTo(100);
+    }
+
 }
