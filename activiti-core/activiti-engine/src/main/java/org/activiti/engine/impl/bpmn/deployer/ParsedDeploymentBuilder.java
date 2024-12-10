@@ -57,7 +57,7 @@ public class ParsedDeploymentBuilder {
 
     for (ResourceEntity resource : deployment.getResources().values()) {
       if (isBpmnResource(resource.getName())) {
-        if (mayBeContainsProcessDefinitionResourceName(resource.getName())) {
+        if (deploymentSettings == null || mayBeContainsProcessDefinitionResourceName(resource.getName())) {
           log.debug("Processing BPMN resource {}", resource.getName());
           BpmnParse parse = createBpmnParseFromResource(resource);
           for (ProcessDefinitionEntity processDefinition : parse.getProcessDefinitions()) {
