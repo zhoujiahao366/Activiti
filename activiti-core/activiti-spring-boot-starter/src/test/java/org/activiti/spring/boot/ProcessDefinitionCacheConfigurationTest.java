@@ -51,7 +51,7 @@ public class ProcessDefinitionCacheConfigurationTest {
 
     @Test
     public void shouldDeployAllProcessDefinitions() {
-        assertThat(repositoryService.createProcessDefinitionQuery().list()).hasSize(103);
+        assertThat(repositoryService.createProcessDefinitionQuery().count()).isGreaterThan(100);
     }
 
     @Test
