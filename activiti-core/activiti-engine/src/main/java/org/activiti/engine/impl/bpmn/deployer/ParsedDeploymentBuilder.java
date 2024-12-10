@@ -19,11 +19,13 @@ package org.activiti.engine.impl.bpmn.deployer;
 import static org.activiti.engine.impl.cmd.DeploymentSettings.RESOURCE_NAMES;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.activiti.engine.ActivitiException;
 import org.activiti.engine.impl.bpmn.parser.BpmnParse;
 import org.activiti.engine.impl.bpmn.parser.BpmnParser;
 import org.activiti.engine.impl.cmd.DeploymentSettings;
@@ -84,34 +86,37 @@ public class ParsedDeploymentBuilder {
 
   protected BpmnParse createBpmnParseFromResource(ResourceEntity resource) {
     String resourceName = resource.getName();
-    ByteArrayInputStream inputStream = new ByteArrayInputStream(resource.getBytes());
 
-    BpmnParse bpmnParse = bpmnParser.createParse()
-        .sourceInputStream(inputStream)
-        .setSourceSystemId(resourceName)
-        .deployment(deployment)
-        .name(resourceName);
+    try(ByteArrayInputStream inputStream = new ByteArrayInputStream(resource.getBytes())) {
+        BpmnParse bpmnParse = bpmnParser.createParse()
+            .sourceInputStream(inputStream)
+            .setSourceSystemId(resourceName)
+            .deployment(deployment)
+            .name(resourceName);
 
-    if (deploymentSettings != null) {
+        if (deploymentSettings != null) {
 
-      // Schema validation if needed
-      if (deploymentSettings.containsKey(DeploymentSettings.IS_BPMN20_XSD_VALIDATION_ENABLED)) {
-        bpmnParse.setValidateSchema((Boolean) deploymentSettings.get(DeploymentSettings.IS_BPMN20_XSD_VALIDATION_ENABLED));
-      }
+            // Schema validation if needed
+            if (deploymentSettings.containsKey(DeploymentSettings.IS_BPMN20_XSD_VALIDATION_ENABLED)) {
+                bpmnParse.setValidateSchema((Boolean) deploymentSettings.get(DeploymentSettings.IS_BPMN20_XSD_VALIDATION_ENABLED));
+            }
 
-      // Process validation if needed
-      if (deploymentSettings.containsKey(DeploymentSettings.IS_PROCESS_VALIDATION_ENABLED)) {
-        bpmnParse.setValidateProcess((Boolean) deploymentSettings.get(DeploymentSettings.IS_PROCESS_VALIDATION_ENABLED));
-      }
+            // Process validation if needed
+            if (deploymentSettings.containsKey(DeploymentSettings.IS_PROCESS_VALIDATION_ENABLED)) {
+                bpmnParse.setValidateProcess((Boolean) deploymentSettings.get(DeploymentSettings.IS_PROCESS_VALIDATION_ENABLED));
+            }
 
-    } else {
-      // On redeploy, we assume it is validated at the first deploy
-      bpmnParse.setValidateSchema(false);
-      bpmnParse.setValidateProcess(false);
+        } else {
+            // On redeploy, we assume it is validated at the first deploy
+            bpmnParse.setValidateSchema(false);
+            bpmnParse.setValidateProcess(false);
+        }
+
+        bpmnParse.execute();
+        return bpmnParse;
+    } catch (IOException e) {
+        throw new ActivitiException(e.getMessage(), e);
     }
-
-    bpmnParse.execute();
-    return bpmnParse;
   }
 
   protected boolean isBpmnResource(String resourceName) {
