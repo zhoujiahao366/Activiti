@@ -67,8 +67,8 @@ public class ProcessExtensionService {
 
             protected boolean removeEldestEntry(Map.Entry<String, Map<String, Extension>> eldest) {
                 boolean removeEldest = size() > cacheLimit;
-                if (removeEldest) {
-                    logger.warn("Cache limit of {} entries has been reached, eldest key {} will be evicted", cacheLimit, eldest.getKey());
+                if (removeEldest && logger.isDebugEnabled()) {
+                    logger.debug("Cache limit of {} entries has been reached, eldest key {} will be evicted", cacheLimit, eldest.getKey());
                 }
                 return removeEldest;
             }

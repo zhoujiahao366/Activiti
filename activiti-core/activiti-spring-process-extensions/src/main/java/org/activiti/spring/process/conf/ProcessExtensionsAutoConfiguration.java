@@ -17,28 +17,36 @@
 
 package org.activiti.spring.process.conf;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 import org.activiti.common.util.DateFormatterProvider;
 import org.activiti.engine.RepositoryService;
 import org.activiti.spring.process.CachingProcessExtensionService;
 import org.activiti.spring.process.ProcessExtensionResourceReader;
 import org.activiti.spring.process.ProcessExtensionService;
+import org.activiti.spring.process.ProcessExtensionServiceProperties;
 import org.activiti.spring.process.model.ProcessExtensionModel;
 import org.activiti.spring.process.variable.VariableParsingService;
 import org.activiti.spring.process.variable.VariableValidationService;
-import org.activiti.spring.process.variable.types.*;
+import org.activiti.spring.process.variable.types.BigDecimalVariableType;
+import org.activiti.spring.process.variable.types.DateVariableType;
+import org.activiti.spring.process.variable.types.JavaObjectVariableType;
+import org.activiti.spring.process.variable.types.JsonObjectVariableType;
+import org.activiti.spring.process.variable.types.VariableType;
 import org.activiti.spring.resources.DeploymentResourceLoader;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration
 @EnableCaching
+@EnableConfigurationProperties({ProcessExtensionServiceProperties.class})
 public class ProcessExtensionsAutoConfiguration {
 
     @Bean
@@ -57,10 +65,12 @@ public class ProcessExtensionsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ProcessExtensionService processExtensionService(ProcessExtensionResourceReader processExtensionResourceReader,
-                                                           DeploymentResourceLoader<ProcessExtensionModel> deploymentResourceLoader) {
+                                                           DeploymentResourceLoader<ProcessExtensionModel> deploymentResourceLoader,
+                                                           ProcessExtensionServiceProperties properties) {
         return new ProcessExtensionService(
                 deploymentResourceLoader,
-                processExtensionResourceReader);
+                processExtensionResourceReader,
+                Optional.ofNullable(properties.getCacheLimit()).orElse(-1));
     }
 
     @Bean
