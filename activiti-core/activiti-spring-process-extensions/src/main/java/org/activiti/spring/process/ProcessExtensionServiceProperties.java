@@ -16,17 +16,42 @@
 
 package org.activiti.spring.process;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties("activiti.process.extensions")
+@ConfigurationProperties("activiti.spring.cache-manager")
 public class ProcessExtensionServiceProperties {
-    private Integer cacheLimit;
 
-    public Integer getCacheLimit() {
-        return cacheLimit;
+    private Map<String, CaffeineCacheSpec> caches = new LinkedHashMap<>();
+
+    public static class CaffeineCacheSpec {
+        private boolean enabled = true;
+        private String spec;
+
+        public String getSpec() {
+            return spec;
+        }
+
+        public void setSpec(String spec) {
+            this.spec = spec;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 
-    public void setCacheLimit(Integer cacheLimit) {
-        this.cacheLimit = cacheLimit;
+    public Map<String, CaffeineCacheSpec> getCaches() {
+        return caches;
     }
+
+    public void setCaches(Map<String, CaffeineCacheSpec> caches) {
+        this.caches = caches;
+    }
+
 }

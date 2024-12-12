@@ -17,10 +17,9 @@
 
 package org.activiti.spring.process;
 
-import static java.util.Collections.synchronizedMap;
+import static org.activiti.spring.process.ProcessExtensionService.PROCESS_EXTENSIONS_CACHE_NAME;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.activiti.engine.RepositoryService;
@@ -30,63 +29,34 @@ import org.activiti.spring.process.model.ProcessExtensionModel;
 import org.activiti.spring.resources.DeploymentResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 
+@CacheConfig(cacheNames = {PROCESS_EXTENSIONS_CACHE_NAME})
 public class ProcessExtensionService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessExtensionService.class);
+
+    public static final String PROCESS_EXTENSIONS_CACHE_NAME = "processExtensions";
 
     private final DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader;
     private final ProcessExtensionResourceReader processExtensionReader;
     private RepositoryService repositoryService;
 
     private static final Extension EMPTY_EXTENSIONS = new Extension();
-    private final Map<String, Map<String, Extension>> processExtensionModelDeploymentMap;
 
     public ProcessExtensionService(DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader,
         ProcessExtensionResourceReader processExtensionReader) {
 
         this.processExtensionLoader = processExtensionLoader;
         this.processExtensionReader = processExtensionReader;
-
-        processExtensionModelDeploymentMap = synchronizedMap(new HashMap<>());
-    }
-
-    public ProcessExtensionService(
-        DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader,
-        ProcessExtensionResourceReader processExtensionReader,
-        int cacheLimit
-    ) {
-        this.processExtensionLoader = processExtensionLoader;
-        this.processExtensionReader = processExtensionReader;
-
-        processExtensionModelDeploymentMap = synchronizedMap(new LinkedHashMap<>(cacheLimit + 1, 0.75f, true) {
-            // +1 is needed, because the entry is inserted first, before it is removed
-            // 0.75 is the default (see javadocs)
-            // true will keep the 'access-order', which is needed to have a real LRU cache
-            private static final long serialVersionUID = 1L;
-
-            protected boolean removeEldestEntry(Map.Entry<String, Map<String, Extension>> eldest) {
-                boolean removeEldest = size() > cacheLimit;
-                if (removeEldest && logger.isDebugEnabled()) {
-                    logger.debug("Cache limit of {} entries has been reached, eldest key {} will be evicted", cacheLimit, eldest.getKey());
-                }
-                return removeEldest;
-            }
-        });
     }
 
     private Map<String, Extension> getProcessExtensionsForDeploymentId(String deploymentId) {
-        Map<String, Extension> processExtensionModelMap = processExtensionModelDeploymentMap.get(deploymentId);
-        if (processExtensionModelMap != null) {
-            return processExtensionModelMap;
-        }
-
         List<ProcessExtensionModel> processExtensionModels = processExtensionLoader.loadResourcesForDeployment(deploymentId,
                 processExtensionReader);
 
-        processExtensionModelMap = buildProcessDefinitionAndExtensionMap(processExtensionModels);
-        processExtensionModelDeploymentMap.put(deploymentId, processExtensionModelMap);
-        return processExtensionModelMap;
+        return buildProcessDefinitionAndExtensionMap(processExtensionModels);
     }
 
     private Map<String, Extension> buildProcessDefinitionAndExtensionMap(List<ProcessExtensionModel> processExtensionModels) {
@@ -98,15 +68,18 @@ public class ProcessExtensionService {
         return buildProcessExtensionMap;
     }
 
+    @Cacheable(key = "#processDefinition.id")
     public boolean hasExtensionsFor(ProcessDefinition processDefinition) {
         return !EMPTY_EXTENSIONS.equals(getExtensionsFor(processDefinition));
     }
 
+    @Cacheable
     public boolean hasExtensionsFor(String processDefinitionId) {
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processDefinitionId);
         return hasExtensionsFor(processDefinition);
     }
 
+    @Cacheable(key = "#processDefinition.id")
     public Extension getExtensionsFor(ProcessDefinition processDefinition) {
         Map<String, Extension> processExtensionModelMap = getProcessExtensionsForDeploymentId(processDefinition.getDeploymentId());
         Extension extension = processExtensionModelMap.get(processDefinition.getKey());
@@ -114,6 +87,7 @@ public class ProcessExtensionService {
         return extension != null ? extension : EMPTY_EXTENSIONS;
     }
 
+    @Cacheable
     public Extension getExtensionsForId(String processDefinitionId) {
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processDefinitionId);
 

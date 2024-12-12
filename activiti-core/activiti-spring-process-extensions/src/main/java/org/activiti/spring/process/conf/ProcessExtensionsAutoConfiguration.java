@@ -18,10 +18,11 @@
 package org.activiti.spring.process.conf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.activiti.common.util.DateFormatterProvider;
 import org.activiti.engine.RepositoryService;
 import org.activiti.spring.process.CachingProcessExtensionService;
@@ -41,12 +42,16 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.PropertySource;
 
 @AutoConfiguration
 @EnableCaching
 @EnableConfigurationProperties({ProcessExtensionServiceProperties.class})
+@PropertySource("classpath:config/process-extensions-service.properties")
 public class ProcessExtensionsAutoConfiguration {
 
     @Bean
@@ -65,12 +70,10 @@ public class ProcessExtensionsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ProcessExtensionService processExtensionService(ProcessExtensionResourceReader processExtensionResourceReader,
-                                                           DeploymentResourceLoader<ProcessExtensionModel> deploymentResourceLoader,
-                                                           ProcessExtensionServiceProperties properties) {
+                                                           DeploymentResourceLoader<ProcessExtensionModel> deploymentResourceLoader) {
         return new ProcessExtensionService(
                 deploymentResourceLoader,
-                processExtensionResourceReader,
-                Optional.ofNullable(properties.getCacheLimit()).orElse(-1));
+                processExtensionResourceReader);
     }
 
     @Bean
@@ -118,5 +121,21 @@ public class ProcessExtensionsAutoConfiguration {
     @ConditionalOnMissingBean
     public CachingProcessExtensionService cachingProcessExtensionService(ProcessExtensionService processExtensionService) {
         return new CachingProcessExtensionService(processExtensionService);
+    }
+
+    @Bean
+    public CacheManager processExtensionsCacheManager(ProcessExtensionServiceProperties properties) {
+        final CaffeineCacheManager manager = new CaffeineCacheManager();
+        properties.getCaches()
+            .entrySet()
+            .stream()
+            .filter(it -> it.getValue().isEnabled())
+            .forEach(cacheEntry -> {
+                Cache<Object, Object> cache = Caffeine.from(cacheEntry.getValue().getSpec()).build();
+
+                manager.registerCustomCache(cacheEntry.getKey(), cache);
+            });
+
+        return manager;
     }
 }
