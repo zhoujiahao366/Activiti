@@ -19,6 +19,7 @@ package org.activiti.spring.process;
 
 import static org.activiti.spring.process.ProcessExtensionService.PROCESS_EXTENSIONS_CACHE_NAME;
 
+import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,9 @@ import org.springframework.cache.annotation.Cacheable;
 public class ProcessExtensionService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessExtensionService.class);
+
+    @Resource
+    private ProcessExtensionService self;
 
     public static final String PROCESS_EXTENSIONS_CACHE_NAME = "processExtensions";
 
@@ -68,12 +72,10 @@ public class ProcessExtensionService {
         return buildProcessExtensionMap;
     }
 
-    @Cacheable(key = "#processDefinition.id")
     public boolean hasExtensionsFor(ProcessDefinition processDefinition) {
-        return !EMPTY_EXTENSIONS.equals(getExtensionsFor(processDefinition));
+        return !EMPTY_EXTENSIONS.equals(self != null ? self.getExtensionsFor(processDefinition) : this.getExtensionsFor(processDefinition));
     }
 
-    @Cacheable
     public boolean hasExtensionsFor(String processDefinitionId) {
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processDefinitionId);
         return hasExtensionsFor(processDefinition);
