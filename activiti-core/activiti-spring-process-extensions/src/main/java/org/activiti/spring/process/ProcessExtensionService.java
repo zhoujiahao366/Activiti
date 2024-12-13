@@ -32,12 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 
 @CacheConfig(cacheNames = {PROCESS_EXTENSIONS_CACHE_NAME})
 public class ProcessExtensionService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessExtensionService.class);
 
+    @Lazy
     @Resource
     private ProcessExtensionService self;
 
