@@ -20,8 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties("activiti.spring.cache-manager")
-public class ProcessExtensionServiceProperties {
+@ConfigurationProperties("activiti.process.cache-manager")
+public class ActivitiProcessCacheManagerProperties {
 
     private Map<String, CaffeineCacheSpec> caches = new LinkedHashMap<>();
 

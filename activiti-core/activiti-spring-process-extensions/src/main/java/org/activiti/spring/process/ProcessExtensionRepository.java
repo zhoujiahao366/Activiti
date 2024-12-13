@@ -16,20 +16,11 @@
 
 package org.activiti.spring.process;
 
+import java.util.Optional;
 import org.activiti.spring.process.model.Extension;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.lang.NonNull;
 
-@Deprecated
-public class CachingProcessExtensionService {
+public interface ProcessExtensionRepository {
 
-    private final ProcessExtensionService processExtensionService;
-
-    public CachingProcessExtensionService(ProcessExtensionService processExtensionService) {
-        this.processExtensionService = processExtensionService;
-    }
-
-    @Cacheable("extensionsById")
-    public Extension getExtensionsForId(String processDefinitionId) {
-        return processExtensionService.getExtensionsForId(processDefinitionId);
-    }
+    Optional<Extension> getExtensionsForId(@NonNull String processDefinitionId);
 }

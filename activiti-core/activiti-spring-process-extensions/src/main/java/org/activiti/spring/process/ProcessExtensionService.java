@@ -17,89 +17,33 @@
 
 package org.activiti.spring.process;
 
-import static org.activiti.spring.process.ProcessExtensionService.PROCESS_EXTENSIONS_CACHE_NAME;
-
-import jakarta.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.spring.process.model.Extension;
-import org.activiti.spring.process.model.ProcessExtensionModel;
-import org.activiti.spring.resources.DeploymentResourceLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.NonNull;
 
-@CacheConfig(cacheNames = {PROCESS_EXTENSIONS_CACHE_NAME})
 public class ProcessExtensionService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessExtensionService.class);
+    private final static Extension EMPTY_EXTENSION = new Extension();
 
-    @Lazy
-    @Resource
-    private ProcessExtensionService self;
+    private final ProcessExtensionRepository processExtensionRepository;
 
-    public static final String PROCESS_EXTENSIONS_CACHE_NAME = "processExtensions";
-
-    private final DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader;
-    private final ProcessExtensionResourceReader processExtensionReader;
-    private RepositoryService repositoryService;
-
-    private static final Extension EMPTY_EXTENSIONS = new Extension();
-
-    public ProcessExtensionService(DeploymentResourceLoader<ProcessExtensionModel> processExtensionLoader,
-        ProcessExtensionResourceReader processExtensionReader) {
-
-        this.processExtensionLoader = processExtensionLoader;
-        this.processExtensionReader = processExtensionReader;
+    public ProcessExtensionService(ProcessExtensionRepository processExtensionRepository) {
+        this.processExtensionRepository = processExtensionRepository;
     }
 
-    private Map<String, Extension> getProcessExtensionsForDeploymentId(String deploymentId) {
-        List<ProcessExtensionModel> processExtensionModels = processExtensionLoader.loadResourcesForDeployment(deploymentId,
-                processExtensionReader);
-
-        return buildProcessDefinitionAndExtensionMap(processExtensionModels);
+    public boolean hasExtensionsFor(@NonNull ProcessDefinition processDefinition) {
+        return hasExtensionsFor(processDefinition.getId());
     }
 
-    private Map<String, Extension> buildProcessDefinitionAndExtensionMap(List<ProcessExtensionModel> processExtensionModels) {
-        Map<String, Extension> buildProcessExtensionMap = new HashMap<>();
-        for (ProcessExtensionModel processExtensionModel:processExtensionModels ) {
-            buildProcessExtensionMap.putAll(processExtensionModel.getAllExtensions());
-        }
-
-        return buildProcessExtensionMap;
+    public boolean hasExtensionsFor(@NonNull String processDefinitionId) {
+        return processExtensionRepository.getExtensionsForId(processDefinitionId).isPresent();
     }
 
-    public boolean hasExtensionsFor(ProcessDefinition processDefinition) {
-        return !EMPTY_EXTENSIONS.equals(self != null ? self.getExtensionsFor(processDefinition) : this.getExtensionsFor(processDefinition));
+    public Extension getExtensionsFor(@NonNull ProcessDefinition processDefinition) {
+        return getExtensionsForId(processDefinition.getId());
     }
 
-    public boolean hasExtensionsFor(String processDefinitionId) {
-        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processDefinitionId);
-        return hasExtensionsFor(processDefinition);
-    }
-
-    @Cacheable(key = "#processDefinition.id")
-    public Extension getExtensionsFor(ProcessDefinition processDefinition) {
-        Map<String, Extension> processExtensionModelMap = getProcessExtensionsForDeploymentId(processDefinition.getDeploymentId());
-        Extension extension = processExtensionModelMap.get(processDefinition.getKey());
-
-        return extension != null ? extension : EMPTY_EXTENSIONS;
-    }
-
-    @Cacheable
-    public Extension getExtensionsForId(String processDefinitionId) {
-        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processDefinitionId);
-
-        Extension processExtension = getExtensionsFor(processDefinition);
-        return processExtension != null ? processExtension : EMPTY_EXTENSIONS;
-    }
-
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
+    public Extension getExtensionsForId(@NonNull String processDefinitionId) {
+        return processExtensionRepository.getExtensionsForId(processDefinitionId).orElse(EMPTY_EXTENSION);
     }
 }
