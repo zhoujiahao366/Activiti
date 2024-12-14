@@ -1,0 +1,2 @@
+org.activiti.spring.cache.config.ActivitiSpringCacheManagerAutoConfiguration
+org.activiti.spring.cache.caffeine.ActivitiCaffeineCacheProviderAutoConfiguration
