@@ -16,6 +16,8 @@
 
 package org.activiti.spring.cache;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("activiti.spring.cache-manager")
@@ -29,6 +31,8 @@ public class ActivitiSpringCacheManagerProperties {
     private boolean enabled = true;
 
     private CacheProvider provider;
+
+    private CaffeineCacheProviderProperties caffeine;
 
     public boolean isEnabled() {
         return enabled;
@@ -46,4 +50,64 @@ public class ActivitiSpringCacheManagerProperties {
         this.provider = provider;
     }
 
+    public CaffeineCacheProviderProperties getCaffeine() {
+        return caffeine;
+    }
+
+    public void setCaffeine(CaffeineCacheProviderProperties caffeine) {
+        this.caffeine = caffeine;
+    }
+
+    public static class CaffeineCacheProviderProperties {
+        private boolean allowNullValues = false;
+
+        private String defaultSpec = "";
+
+        private Map<String, CaffeineCacheSpec> caches = new LinkedHashMap<>();
+
+        public static class CaffeineCacheSpec {
+            private boolean enabled = true;
+            private String spec = "";
+
+            public String getSpec() {
+                return spec;
+            }
+
+            public void setSpec(String spec) {
+                this.spec = spec;
+            }
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+
+        public boolean isAllowNullValues() {
+            return allowNullValues;
+        }
+
+        public void setAllowNullValues(boolean allowNullValues) {
+            this.allowNullValues = allowNullValues;
+        }
+
+        public Map<String, CaffeineCacheSpec> getCaches() {
+            return caches;
+        }
+
+        public void setCaches(Map<String, CaffeineCacheSpec> caches) {
+            this.caches = caches;
+        }
+
+        public String getDefaultSpec() {
+            return defaultSpec;
+        }
+
+        public void setDefaultSpec(String defaultSpec) {
+            this.defaultSpec = defaultSpec;
+        }
+    }
 }

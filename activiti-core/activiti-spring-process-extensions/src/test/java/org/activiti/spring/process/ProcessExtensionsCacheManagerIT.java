@@ -27,16 +27,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    properties = {
-        "activiti.process.cache-manager.caches.foo-bar.enabled=false",
-        "activiti.process.cache-manager.caches.foo-bar.spec=initialCapacity=100, maximumSize=1000, expireAfterAccess=60s",
-    })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class ProcessExtensionsCacheManagerIT {
 
     @Autowired
-    private CacheManager processExtensionsCacheManager;
+    private CacheManager cacheManager;
 
     @MockBean
     private RepositoryService repositoryService;
@@ -49,14 +44,14 @@ public class ProcessExtensionsCacheManagerIT {
 
     @Test
     void testCacheManager() {
-        assertThat(processExtensionsCacheManager.getCacheNames()).containsExactly("processExtensionsForId", "deploymentResources");
+        assertThat(cacheManager.getCacheNames()).containsExactly("processExtensionsById", "deploymentResourcesById");
     }
 
     @Test
     @Disabled
     void testProcessExtensionsCache(){
-        var processExtensionsCache = processExtensionsCacheManager.getCache("processExtensionsForId");
-        var deploymentResourcesCache = processExtensionsCacheManager.getCache("deploymentResources");
+        var processExtensionsCache = cacheManager.getCache("processExtensionsById");
+        var deploymentResourcesCache = cacheManager.getCache("deploymentResourcesById");
 
         assertThat(deploymentResourcesCache).isNotNull();
         assertThat(processExtensionsCache).isNotNull();

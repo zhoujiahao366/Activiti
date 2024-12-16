@@ -16,32 +16,49 @@
 
 package org.activiti.spring.cache.config;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import org.activiti.spring.cache.ActivitiSpringCacheManagerProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
+import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.support.SimpleCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-@AutoConfiguration
+@AutoConfiguration(before = { CacheAutoConfiguration.class })
 @EnableCaching
 @EnableConfigurationProperties({ActivitiSpringCacheManagerProperties.class})
 @PropertySource("classpath:config/activiti-spring-cache-manager.properties")
 public class ActivitiSpringCacheManagerAutoConfiguration {
 
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(value = "activiti.spring.cache-manager.provider", havingValue = "simple")
-    static class ActivitiSpringCacheManagerProperties {
+    @Bean
+    @ConditionalOnClass(CaffeineCacheManager.class)
+    @ConditionalOnProperty(value = "activiti.spring.cache-manager.provider", havingValue = "caffeine")
+    public CacheManagerCustomizer<CaffeineCacheManager> activitiSpringCaffeineCacheManagerCustomizer(ActivitiSpringCacheManagerProperties properties) {
+        return cacheManager -> {
+            var caffeineCacheProperties = properties.getCaffeine();
 
-        @Bean
-        CacheManager simpleCacheManager() {
-            return new SimpleCacheManager();
+            cacheManager.setCaffeineSpec(CaffeineSpec.parse(caffeineCacheProperties.getDefaultSpec()));
+            cacheManager.setAllowNullValues(caffeineCacheProperties.isAllowNullValues());
+
+            caffeineCacheProperties.getCaches()
+                .entrySet()
+                .stream()
+                .filter(it -> it.getValue().isEnabled())
+                .forEach(cacheEntry -> {
+                    Cache<Object, Object> cache = Caffeine.from(cacheEntry.getValue()
+                            .getSpec())
+                        .build();
+                    cacheManager.registerCustomCache(cacheEntry.getKey(),
+                        cache);
+                });
         };
-
     }
 
 }

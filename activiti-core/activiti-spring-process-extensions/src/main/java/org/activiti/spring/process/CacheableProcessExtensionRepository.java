@@ -28,7 +28,7 @@ import org.springframework.lang.NonNull;
 @CacheConfig(cacheNames = {PROCESS_EXTENSIONS_CACHE_NAME})
 public class CacheableProcessExtensionRepository implements ProcessExtensionRepository {
 
-    public static final String PROCESS_EXTENSIONS_CACHE_NAME = "processExtensionsForId";
+    public static final String PROCESS_EXTENSIONS_CACHE_NAME = "processExtensionsById";
 
     private final ProcessExtensionRepository delegate;
 

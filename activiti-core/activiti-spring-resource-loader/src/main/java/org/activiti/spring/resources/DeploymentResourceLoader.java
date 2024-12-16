@@ -29,7 +29,7 @@ import org.springframework.cache.annotation.Cacheable;
 @CacheConfig(cacheNames = {DEPLOYMENT_RESOURCES_CACHE_NAME})
 public class DeploymentResourceLoader<T> {
 
-    public final static String DEPLOYMENT_RESOURCES_CACHE_NAME = "deploymentResources";
+    public final static String DEPLOYMENT_RESOURCES_CACHE_NAME = "deploymentResourcesById";
 
     private RepositoryService repositoryService;
 

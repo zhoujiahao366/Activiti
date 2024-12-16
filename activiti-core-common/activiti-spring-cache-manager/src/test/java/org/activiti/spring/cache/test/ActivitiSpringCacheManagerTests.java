@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.cache.CacheType;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCache;
@@ -28,8 +30,11 @@ import org.springframework.cache.caffeine.CaffeineCacheManager;
 
 @SpringBootTest(
     properties = {
-        "activiti.spring.cache-manager.caffeine.caches.foo-bar.enabled=true",
-        "activiti.spring.cache-manager.caffeine.caches.foo-bar.spec=initialCapacity=100, maximumSize=1000, expireAfterAccess=60s, recordStats",
+        "debug=true",
+        "activiti.spring.cache-manager.caffeine.caches.foo.enabled=true",
+        "activiti.spring.cache-manager.caffeine.caches.foo.spec=initialCapacity=100, maximumSize=1000, expireAfterAccess=60s, recordStats",
+        "activiti.spring.cache-manager.caffeine.caches.bar.enabled=false",
+        "activiti.spring.cache-manager.caffeine.caches.bar.spec=initialCapacity=100, maximumSize=1000, expireAfterAccess=60s, recordStats",
 })
 @SpringBootApplication
 public class ActivitiSpringCacheManagerTests {
@@ -37,25 +42,36 @@ public class ActivitiSpringCacheManagerTests {
     @Autowired(required = false)
     private CacheManager cacheManager;
 
+    @Value("${spring.cache.type}")
+    private CacheType springCacheType;
+
     @Test
     void testCacheManager() {
         assertThat(cacheManager)
             .isNotNull()
             .isInstanceOf(CaffeineCacheManager.class);
+    }
 
+    @Test
+    void testAllowNullValues() {
         assertThat(CaffeineCacheManager.class.cast(cacheManager).isAllowNullValues()).isFalse();
     }
 
     @Test
     void testCaffeineCacheManager() {
-        assertThat(cacheManager.getCacheNames()).containsExactly("foo-bar");
+        assertThat(cacheManager.getCacheNames()).containsExactly("foo");
     }
 
     @Test
     void testCaffeineCaches() {
-        var cache = cacheManager.getCache("foo-bar");
+        var cache = cacheManager.getCache("foo");
 
         assertThat(cache).isInstanceOf(CaffeineCache.class);
+    }
+
+    @Test
+    void springCacheType() {
+        assertThat(springCacheType).isEqualTo(CacheType.CAFFEINE);
     }
 
 }
